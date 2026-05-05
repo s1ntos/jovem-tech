@@ -1,0 +1,53 @@
+
+CREATE TABLE IF NOT EXISTS Aluno  (
+    id SERIAL PRIMARY KEY,
+    nome_completo varchar (150) NOT NULL,
+    cpf NUMERIC (11) UNIQUE NOT NULL,
+    instuicao varchar (100) NOT NULL
+    contato NUMERIC (11) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS Professor (
+    id SERIAL PRIMARY KEY,
+    nome_completo varchar (150) NOT NULL,
+    instituicao varchar (100) not null
+);
+
+CREATE TABLE IF NOT EXISTS Disciplina (
+    id SERIAL PRIMARY KEY,
+    nome varchar (100) NOT NULL,
+    FOREIGN KEY professor_id INTEGER REFERENCES Professor(id) ON DELETE RESTRICT
+);
+
+CREATE TABLE IF NOT EXISTS Matricula (
+    id SERIAL PRIMARY KEY,
+        data_matricula TIMESTAMPTZ NOT NULL,
+    FOREIGN KEY Aluno_id INTEGER REFERENCES Aluno(id) ON DELETE RESTRICT
+    
+);
+
+CREATE TABLE IF NOT EXISTS Curso (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR (100) NOT NULL
+    
+);
+
+CREATE TABLE IF NOT EXISTS Turma (
+    id SERIAL PRIMARY KEY,
+    horario TIME NOT NULL,
+    FOREIGN KEY professor_id INTEGER REFERENCES Professor(id) ON DELETE RESTRICT
+);
+
+CREATE TABLE IF NOT EXISTS Nota (
+    id SERIAL PRIMARY KEY,
+    provas NUMERIC (10,0) NOT NULL,
+    trabalhos NUMERIC (10, 0) NOT NULL,
+    FOREIGN KEY turma_id INTEGER REFERENCES Turma(id) ON DELETE RESTRICT
+
+);
+
+CREATE TABLE IF NOT EXISTS Frequencia (
+    id SERIAL PRIMARY KEY,
+    FOREIGN KEY aluno_id INTEGER REFERENCES Aluno(id) ON DELETE RESTRICT
+    
+);
