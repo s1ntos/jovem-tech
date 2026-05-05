@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS Aluno  (
     id SERIAL PRIMARY KEY,
     nome_completo varchar (150) NOT NULL,
     cpf NUMERIC (11) UNIQUE NOT NULL,
-    instuicao varchar (100) NOT NULL
+    instuicao varchar (100) NOT NULL,
     contato NUMERIC (11) NOT NULL
 );
 
@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS Disciplina (
 
 CREATE TABLE IF NOT EXISTS Matricula (
     id SERIAL PRIMARY KEY,
-        data_matricula TIMESTAMPTZ NOT NULL,
+    data_matricula TIMESTAMPTZ NOT NULL,
     FOREIGN KEY Aluno_id INTEGER REFERENCES Aluno(id) ON DELETE RESTRICT
     
 );
