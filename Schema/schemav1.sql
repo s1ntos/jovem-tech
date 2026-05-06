@@ -1,36 +1,42 @@
-DROP DATABASE IF EXISTS edufacil;
-CREATE DATABASE edufacil CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE edufacil;
+-- Prevenção de duplicar telas
+DROP TABLE IF EXISTS Frequencia;
+DROP TABLE IF EXISTS Nota;
+DROP TABLE IF EXISTS Matricula;
+DROP TABLE IF EXISTS Turma;
+DROP TABLE IF EXISTS curso_disc;
+DROP TABLE IF EXISTS Aluno;
+DROP TABLE IF EXISTS Professor;
+DROP TABLE IF EXISTS Disciplina;
+DROP TABLE IF EXISTS Curso;
 
 CREATE TABLE Curso (
-    idCurso         INT AUTO_INCREMENT PRIMARY KEY,
-    nome            VARCHAR(45) NOT NULL,
-    dur_semestre    INT NOT NULL,
-    area_conhe      VARCHAR(45) NOT NULL
+    idCurso       SERIAL PRIMARY KEY,
+    nome          VARCHAR(45) NOT NULL,
+    dur_semestre  INT NOT NULL,
+    area_conhe    VARCHAR(45) NOT NULL
 );
 
 CREATE TABLE Disciplina (
-    idDisciplina    INT AUTO_INCREMENT PRIMARY KEY,
-    nome            VARCHAR(45) NOT NULL,
-    carga_horaria   VARCHAR(45) NOT NULL,
-    ementa          VARCHAR(255)
+    idDisciplina  SERIAL PRIMARY KEY,
+    nome          VARCHAR(45) NOT NULL,
+    carga_horaria VARCHAR(45) NOT NULL,
+    ementa        VARCHAR(255)
 );
 
 CREATE TABLE Professor (
-    idProfessor     INT AUTO_INCREMENT PRIMARY KEY,
-    especialidade   VARCHAR(45),
-    status          VARCHAR(45) NOT NULL DEFAULT 'ativo',
-                    -- valores: 'ativo', 'afastado'
-    nome            VARCHAR(45) NOT NULL
+    idProfessor   SERIAL PRIMARY KEY,
+    especialidade VARCHAR(45),
+    status        VARCHAR(45) NOT NULL DEFAULT 'ativo', -- 'ativo', 'afastado'
+    nome          VARCHAR(45) NOT NULL
 );
+
 CREATE TABLE Aluno (
-    idAluno         INT AUTO_INCREMENT PRIMARY KEY,
-    nome_completo   VARCHAR(45) NOT NULL,
-    cpf             VARCHAR(45) UNIQUE NOT NULL,
-    data_nasc       DATETIME NOT NULL,
-    contato         VARCHAR(45),
-    status          VARCHAR(45) NOT NULL DEFAULT 'ativo'
-                    -- valores: 'ativo', 'trancado', 'formado'
+    idAluno       SERIAL PRIMARY KEY,
+    nome_completo VARCHAR(45) NOT NULL,
+    cpf           VARCHAR(45) UNIQUE NOT NULL,
+    data_nasc     TIMESTAMP NOT NULL,
+    contato       VARCHAR(45),
+    status        VARCHAR(45) NOT NULL DEFAULT 'ativo' -- 'ativo', 'trancado', 'formado'
 );
 
 CREATE TABLE curso_disc (
@@ -42,10 +48,10 @@ CREATE TABLE curso_disc (
 );
 
 CREATE TABLE Turma (
-    idTurma                 INT AUTO_INCREMENT PRIMARY KEY,
-    horario                 DATETIME,
+    idTurma                 SERIAL PRIMARY KEY,
+    horario                 TIMESTAMP,
     SALA                    VARCHAR(45),
-    PROFESSOR               VARCHAR(45),  -- campo descritivo conforme diagrama
+    PROFESSOR_NOME          VARCHAR(45), -- Alterado de 'PROFESSOR' para evitar conflito de nome
     Professor_idProfessor   INT NOT NULL,
     Disciplina_idDisciplina INT NOT NULL,
     Curso_idCurso           INT NOT NULL,
@@ -55,32 +61,30 @@ CREATE TABLE Turma (
 );
 
 CREATE TABLE Matricula (
-    idMatricula     INT AUTO_INCREMENT PRIMARY KEY,
-    data_mastri     DATETIME NOT NULL,
-    status          TINYINT NOT NULL,
-                    -- 0 = cancelada, 1 = ativa, 2 = concluida
+    idMatricula     SERIAL PRIMARY KEY,
+    data_matri      TIMESTAMP NOT NULL,
+    status          SMALLINT NOT NULL, -- 0 = cancelada, 1 = ativa, 2 = concluida
     Aluno_idAluno   INT NOT NULL,
     Turma_idTurma   INT NOT NULL,
-    UNIQUE KEY uk_aluno_turma (Aluno_idAluno, Turma_idTurma),
+    CONSTRAINT uk_aluno_turma UNIQUE (Aluno_idAluno, Turma_idTurma),
     FOREIGN KEY (Aluno_idAluno) REFERENCES Aluno(idAluno),
     FOREIGN KEY (Turma_idTurma) REFERENCES Turma(idTurma)
 );
 
 CREATE TABLE Nota (
-    idNota                  INT AUTO_INCREMENT PRIMARY KEY,
-    valor                   VARCHAR(45) NOT NULL,
-    data                    DATETIME NOT NULL,
-    tipo_avalia             VARCHAR(45) NOT NULL,
-    Matricula_idMatricula   INT NOT NULL,
+    idNota                 SERIAL PRIMARY KEY,
+    valor                  VARCHAR(45) NOT NULL,
+    data                   TIMESTAMP NOT NULL,
+    tipo_avalia            VARCHAR(45) NOT NULL,
+    Matricula_idMatricula  INT NOT NULL,
     FOREIGN KEY (Matricula_idMatricula) REFERENCES Matricula(idMatricula)
 );
 
 CREATE TABLE Frequencia (
-    idFrequencia            INT AUTO_INCREMENT PRIMARY KEY,
-    data                    VARCHAR(45) NOT NULL,
-    status                  VARCHAR(45) NOT NULL,
-                            -- valores: 'presente', 'ausente', 'justificado'
-    turma                   VARCHAR(45),
-    Matricula_idMatricula   INT NOT NULL,
+    idFrequencia           SERIAL PRIMARY KEY,
+    data                   VARCHAR(45) NOT NULL,
+    status                 VARCHAR(45) NOT NULL, -- 'presente', 'ausente', 'justificado'
+    turma_desc             VARCHAR(45),
+    Matricula_idMatricula  INT NOT NULL,
     FOREIGN KEY (Matricula_idMatricula) REFERENCES Matricula(idMatricula)
 );
