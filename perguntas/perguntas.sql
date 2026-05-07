@@ -1,17 +1,33 @@
 -- ---------------------------------------------------------------------
 1. Quais turmas estão em andamento neste semestre? Mostre a disciplina, o professor
 responsável, a sala e o horário 
-nome: 
+nome: Ivan
 -- ---------------------------------------------------------------------
-
+select
+  t.idturma,
+  t.horario,
+  t.sala,
+  t.professor_nome,
+  d.nome
+from
+  turma t
+  inner join disciplina d on t.disciplina_iddisciplina = d.iddisciplina
 
 
 -- ---------------------------------------------------------------------
 2. Quantos alunos estão matriculados em cada turma? Mostre apenas turmas com pelo
 menos 5 alunos ativos. Ordene da turma com mais alunos para a com menos.
-nome: 
+nome: Ivan
 -- ---------------------------------------------------------------------
-
+select
+  t.idturma,
+  t.horario,
+  t.sala,
+  t.professor_nome,
+  d.nome
+from
+  turma t
+  inner join disciplina d on t.disciplina_iddisciplina = d.iddisciplina
 
 -- ---------------------------------------------------------------------
 3. Qual a média de notas por aluno em cada turma? Mostre o nome do aluno, a disciplina e
