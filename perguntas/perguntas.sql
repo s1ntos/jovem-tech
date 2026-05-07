@@ -27,6 +27,26 @@ do aluno, a disciplina e o percentual de presença. A escola considera ausente q
 sem registro de presença ou justificativa.
 nome: 
 -- ---------------------------------------------------------------------
+SELECT
+    a.nome_completo AS aluno,
+    d.nome          AS disciplina,
+    ROUND(
+        100.0 * SUM(CASE WHEN f.status IN ('presente','justificado') THEN 1 ELSE 0 END)
+              / COUNT(f.idFrequencia),
+        1
+    ) AS percentual_presenca
+FROM Frequencia f
+INNER JOIN Matricula  m ON m.idMatricula     = f.Matricula_idMatricula
+INNER JOIN Aluno      a ON a.idAluno         = m.Aluno_idAluno
+INNER JOIN Turma      t ON t.idTurma         = m.Turma_idTurma
+INNER JOIN Disciplina d ON d.idDisciplina    = t.Disciplina_idDisciplina
+GROUP BY a.idAluno, a.nome_completo, d.idDisciplina, d.nome
+HAVING ROUND(
+        100.0 * SUM(CASE WHEN f.status IN ('presente','justificado') THEN 1 ELSE 0 END)
+              / COUNT(f.idFrequencia),
+        1
+    ) < 75
+ORDER BY percentual_presenca ASC;
 
 
 
@@ -69,7 +89,25 @@ where
 média abaixo de 6.0. Mostre o nome da disciplina e a contagem de reprovações.
 nome: 
 -- ---------------------------------------------------------------------
-
+SELECT
+    d.nome AS disciplina,
+    COUNT(*) AS total_reprovacoes
+FROM (
+    SELECT
+        m.idMatricula,
+        m.Turma_idTurma,
+        AVG(CAST(n.valor AS NUMERIC)) AS media
+    FROM Matricula m
+    INNER JOIN Nota n ON n.Matricula_idMatricula = m.idMatricula
+    WHERE m.status IN (1, 2)
+    GROUP BY m.idMatricula, m.Turma_idTurma
+    HAVING AVG(CAST(n.valor AS NUMERIC)) < 6.0
+) reprovados
+INNER JOIN Turma      t ON t.idTurma      = reprovados.Turma_idTurma
+INNER JOIN Disciplina d ON d.idDisciplina = t.Disciplina_idDisciplina
+GROUP BY d.idDisciplina, d.nome
+ORDER BY total_reprovacoes DESC
+LIMIT 1;
 
 
 -- ---------------------------------------------------------------------
@@ -77,7 +115,18 @@ nome:
 nome e a contagem de matrículas ativas.
 nome: 
 -- ---------------------------------------------------------------------
-
+SELECT
+    a.nome_completo,
+    COUNT(m.idMatricula) AS total_matriculas_ativas
+FROM Aluno a
+INNER JOIN Matricula m ON m.Aluno_idAluno = a.idAluno
+INNER JOIN Turma     t ON t.idTurma       = m.Turma_idTurma
+WHERE m.status = 1
+  AND t.horario >= '2026-01-01'
+  AND t.horario <  '2026-07-01'
+GROUP BY a.idAluno, a.nome_completo
+HAVING COUNT(m.idMatricula) > 1
+ORDER BY total_matriculas_ativas DESC;
 
 
 -- ---------------------------------------------------------------------
@@ -85,7 +134,18 @@ nome:
 os alunos de todas as suas turmas ativas)? Mostre o nome e o total de alunos.
 nome: 
 -- ---------------------------------------------------------------------
-
+SELECT
+    p.nome AS professor,
+    COUNT(m.idMatricula) AS total_alunos
+FROM Professor p
+INNER JOIN Turma     t ON t.Professor_idProfessor = p.idProfessor
+INNER JOIN Matricula m ON m.Turma_idTurma         = t.idTurma
+WHERE t.horario >= '2026-01-01'
+  AND t.horario <  '2026-07-01'
+  AND m.status = 1
+GROUP BY p.idProfessor, p.nome
+ORDER BY total_alunos DESC
+LIMIT 1;
 
 
 -- ---------------------------------------------------------------------
