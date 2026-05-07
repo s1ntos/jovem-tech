@@ -202,3 +202,106 @@ INNER JOIN Nota      n ON n.Matricula_idMatricula = m.idMatricula
 GROUP BY a.idAluno, a.nome_completo
 ORDER BY media_geral DESC
 LIMIT 5;
+
+
+-- =====================================================================
+-- VIEW 1 — Boletim de situação acadêmica (consulta direta)
+-- =====================================================================
+SELECT
+    a.nome_completo                                        AS aluno,
+    d.nome                                                 AS disciplina,
+    ROUND(AVG(CAST(n.valor AS NUMERIC)), 1)                AS media_atual,
+    ROUND(
+        100.0 * SUM(CASE WHEN f.status IN ('presente','justificado') THEN 1 ELSE 0 END)
+              / NULLIF(COUNT(f.idFrequencia), 0),
+        1
+    )                                                      AS percentual_frequencia
+FROM Matricula m
+JOIN Aluno      a ON a.idAluno = m.Aluno_idAluno
+JOIN Turma      t ON t.idTurma = m.Turma_idTurma
+JOIN Disciplina d ON d.idDisciplina = t.Disciplina_idDisciplina
+LEFT JOIN Nota       n ON n.Matricula_idMatricula = m.idMatricula
+LEFT JOIN Frequencia f ON f.Matricula_idMatricula = m.idMatricula
+WHERE m.status = 1
+GROUP BY a.idAluno, a.nome_completo, d.idDisciplina, d.nome
+ORDER BY a.nome_completo, d.nome;
+
+
+-- =====================================================================
+-- VIEW 2 — Carga de trabalho dos professores (consulta direta)
+-- =====================================================================
+SELECT
+    p.nome                                  AS professor,
+    COUNT(DISTINCT t.idTurma)               AS total_turmas,
+    COUNT(DISTINCT m.Aluno_idAluno)         AS total_alunos,
+    ROUND(
+        SUM(CAST(d.carga_horaria AS NUMERIC)) / 18.0,
+        1
+    )                                       AS horas_semanais
+FROM Professor p
+LEFT JOIN Turma      t ON t.Professor_idProfessor = p.idProfessor
+LEFT JOIN Disciplina d ON d.idDisciplina = t.Disciplina_idDisciplina
+LEFT JOIN Matricula  m ON m.Turma_idTurma = t.idTurma AND m.status = 1
+WHERE p.status = 'ativo'
+GROUP BY p.idProfessor, p.nome
+ORDER BY total_alunos DESC;
+
+
+-- =====================================================================
+-- TRANSACTION TESTE 1 — COMMIT (trancando matrícula 1)
+-- =====================================================================
+BEGIN;
+
+UPDATE Matricula
+SET status = 0,
+    data_matri = CURRENT_TIMESTAMP
+WHERE idMatricula = 1;
+
+INSERT INTO Frequencia (data, status, turma_desc, Matricula_idMatricula)
+SELECT
+    TO_CHAR(d::date, 'YYYY-MM-DD'),
+    'justificado',
+    'T1',
+    1
+FROM generate_series(
+    CURRENT_DATE,
+    DATE '2026-06-30',
+    INTERVAL '7 days'
+) d;
+
+COMMIT;
+
+-- Verificação
+SELECT 'POS-COMMIT: Matricula 1' AS etapa, status FROM Matricula WHERE idMatricula = 1;
+SELECT 'POS-COMMIT: Frequencias justificadas inseridas' AS etapa, COUNT(*) AS total
+FROM Frequencia WHERE Matricula_idMatricula = 1 AND status = 'justificado';
+
+
+-- =====================================================================
+-- TRANSACTION TESTE 2 — ROLLBACK forçado (trancando matrícula 2)
+-- =====================================================================
+BEGIN;
+
+UPDATE Matricula
+SET status = 0,
+    data_matri = CURRENT_TIMESTAMP
+WHERE idMatricula = 2;
+
+INSERT INTO Frequencia (data, status, turma_desc, Matricula_idMatricula)
+SELECT
+    TO_CHAR(d::date, 'YYYY-MM-DD'),
+    'justificado',
+    'T2',
+    2
+FROM generate_series(
+    CURRENT_DATE,
+    DATE '2026-06-30',
+    INTERVAL '7 days'
+) d;
+
+ROLLBACK;
+
+-- Verificação: matrícula 2 deve continuar ativa (status = 1)
+SELECT 'POS-ROLLBACK: Matricula 2' AS etapa, status FROM Matricula WHERE idMatricula = 2;
+SELECT 'POS-ROLLBACK: Frequencias justificadas' AS etapa, COUNT(*) AS total
+FROM Frequencia WHERE Matricula_idMatricula = 2 AND status = 'justificado';
