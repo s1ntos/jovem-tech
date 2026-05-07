@@ -33,10 +33,20 @@ nome:
 -- ---------------------------------------------------------------------
 5. Quais professores estão responsáveis por mais de uma turma ativa? Mostre o nome do
 professor e a contagem de turmas.
-nome: 
+nome: Brendo
 -- ---------------------------------------------------------------------
 
-
+select
+  p.nome,
+  COUNT(t.idturma) as total_turmas
+from
+  professor p
+  inner join turma t on p.idprofessor = t.professor_idprofessor
+group by
+  p.idprofessor,
+  p.nome
+having
+  COUNT(t.idturma) > 1;
 
 -- ---------------------------------------------------------------------
 6. Quais alunos nunca tiveram nenhuma matrícula cancelada? Mostre o nome completo e o
@@ -44,7 +54,15 @@ status atual.
 nome: 
 -- ---------------------------------------------------------------------
 
-
+select
+  a.nome_completo,
+  a.status
+from
+  aluno a
+  left join matricula m on a.idaluno = m.aluno_idaluno
+  and m.status = 0
+where
+  m.idmatricula is null;
 
 -- ---------------------------------------------------------------------
 7. Qual a disciplina com maior número de reprovações? Considere reprovado o aluno com
