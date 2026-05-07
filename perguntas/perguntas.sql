@@ -233,6 +233,7 @@ LIMIT 5;
 -- =====================================================================
 -- VIEW 1 — Boletim de situação acadêmica (consulta direta)
 -- =====================================================================
+CREATE VIEW vw_desempenho_aluno AS
 SELECT
     a.nome_completo                                        AS aluno,
     d.nome                                                 AS disciplina,
@@ -256,6 +257,7 @@ ORDER BY a.nome_completo, d.nome;
 -- =====================================================================
 -- VIEW 2 — Carga de trabalho dos professores (consulta direta)
 -- =====================================================================
+CREATE VIEW vw_resumo_professor AS
 SELECT
     p.nome                                  AS professor,
     COUNT(DISTINCT t.idTurma)               AS total_turmas,
