@@ -93,7 +93,17 @@ nome:
 coordenação quer verificar se há inconsistência no cadastro.
 nome: 
 -- ---------------------------------------------------------------------
-
+SELECT
+    a.idAluno,
+    a.nome_completo,
+    a.status
+FROM Aluno a
+WHERE a.status = 'ativo'
+  AND a.idAluno NOT IN (
+      SELECT m.Aluno_idAluno
+      FROM Matricula m
+      WHERE m.status = 1
+  );
 
 
 -- ---------------------------------------------------------------------
@@ -102,7 +112,19 @@ matriculados em turmas de cada curso. Ordene do curso com maior frequência méd
 o com menor.
 nome: 
 -- ---------------------------------------------------------------------
-
+SELECT
+    c.nome AS curso,
+    ROUND(
+        100.0 * SUM(CASE WHEN f.status IN ('presente','justificado') THEN 1 ELSE 0 END)
+              / COUNT(f.idFrequencia),
+        1
+    ) AS percentual_medio_frequencia
+FROM Frequencia f
+INNER JOIN Matricula m ON m.idMatricula = f.Matricula_idMatricula
+INNER JOIN Turma     t ON t.idTurma     = m.Turma_idTurma
+INNER JOIN Curso     c ON c.idCurso     = t.Curso_idCurso
+GROUP BY c.idCurso, c.nome
+ORDER BY percentual_medio_frequencia DESC;
 
 
 -- ---------------------------------------------------------------------
@@ -111,3 +133,12 @@ as turmas em que estão ou estiveram matriculados. Mostre o nome e a média gera
 arredondada para 2 casas decimais.
 nome: 
 -- ---------------------------------------------------------------------
+SELECT
+    a.nome_completo,
+    ROUND(AVG(CAST(n.valor AS NUMERIC)), 2) AS media_geral
+FROM Aluno a
+INNER JOIN Matricula m ON m.Aluno_idAluno         = a.idAluno
+INNER JOIN Nota      n ON n.Matricula_idMatricula = m.idMatricula
+GROUP BY a.idAluno, a.nome_completo
+ORDER BY media_geral DESC
+LIMIT 5;
