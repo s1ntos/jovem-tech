@@ -49,28 +49,30 @@ ORDER BY d.nome ASC, media DESC;
 4. Quais alunos têm frequência abaixo de 75% em pelo menos uma turma? Mostre o nome
 do aluno, a disciplina e o percentual de presença. A escola considera ausente qualquer aula
 sem registro de presença ou justificativa.
-nome: 
+nome: Brendo
 -- ---------------------------------------------------------------------
-SELECT
-    a.nome_completo AS aluno,
-    d.nome          AS disciplina,
-    ROUND(
-        100.0 * SUM(CASE WHEN f.status IN ('presente','justificado') THEN 1 ELSE 0 END)
-              / COUNT(f.idFrequencia),
-        1
-    ) AS percentual_presenca
-FROM Frequencia f
-INNER JOIN Matricula  m ON m.idMatricula     = f.Matricula_idMatricula
-INNER JOIN Aluno      a ON a.idAluno         = m.Aluno_idAluno
-INNER JOIN Turma      t ON t.idTurma         = m.Turma_idTurma
-INNER JOIN Disciplina d ON d.idDisciplina    = t.Disciplina_idDisciplina
-GROUP BY a.idAluno, a.nome_completo, d.idDisciplina, d.nome
-HAVING ROUND(
-        100.0 * SUM(CASE WHEN f.status IN ('presente','justificado') THEN 1 ELSE 0 END)
-              / COUNT(f.idFrequencia),
-        1
-    ) < 75
-ORDER BY percentual_presenca ASC;
+select
+  a.nome_completo as aluno,
+  d.nome as disciplina,
+  ROUND(
+    AVG((f.status in ('presente', 'justificado'))::int) * 100,
+    1
+  ) as percentual_presenca
+from
+  Frequencia f
+  inner join Matricula m on m.idMatricula = f.Matricula_idMatricula
+  inner join Aluno a on a.idAluno = m.Aluno_idAluno
+  inner join Turma t on t.idTurma = m.Turma_idTurma
+  inner join Disciplina d on d.idDisciplina = t.Disciplina_idDisciplina
+group by
+  a.idAluno,
+  a.nome_completo,
+  d.idDisciplina,
+  d.nome
+having
+  AVG((f.status in ('presente', 'justificado'))::int) * 100 > 75
+order by
+  percentual_presenca asc;
 
 
 
@@ -95,7 +97,7 @@ having
 -- ---------------------------------------------------------------------
 6. Quais alunos nunca tiveram nenhuma matrícula cancelada? Mostre o nome completo e o
 status atual.
-nome: 
+nome: Brendo
 -- ---------------------------------------------------------------------
 
 select
