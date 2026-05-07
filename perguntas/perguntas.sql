@@ -33,9 +33,17 @@ from
 3. Qual a média de notas por aluno em cada turma? Mostre o nome do aluno, a disciplina e
 a média arredondada para 1 casa decimal. Ordene por disciplina e, dentro de cada
 disciplina, da maior média para a menor.
-nome: 
+nome: Ivan
 -- ---------------------------------------------------------------------
-
+SELECT a.nome_completo AS aluno, d.nome AS disciplina,
+       ROUND(AVG(CAST(n.valor AS NUMERIC)), 1) AS media
+FROM Nota n
+INNER JOIN Matricula  m ON m.idMatricula = n.Matricula_idMatricula
+INNER JOIN Aluno      a ON a.idAluno = m.Aluno_idAluno
+INNER JOIN Turma      t ON t.idTurma = m.Turma_idTurma
+INNER JOIN Disciplina d ON d.idDisciplina = t.Disciplina_idDisciplina
+GROUP BY a.idAluno, a.nome_completo, d.idDisciplina, d.nome
+ORDER BY d.nome ASC, media DESC;
 
 -- ---------------------------------------------------------------------
 4. Quais alunos têm frequência abaixo de 75% em pelo menos uma turma? Mostre o nome
