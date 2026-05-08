@@ -20,14 +20,16 @@ menos 5 alunos ativos. Ordene da turma com mais alunos para a com menos.
 nome: Ivan
 -- ---------------------------------------------------------------------
 select
-  t.idturma,
-  t.horario,
-  t.sala,
-  t.professor_nome,
-  d.nome
+  t.idturma as turma,
+  count(m.idmatricula) as alunos
 from
   turma t
-  inner join disciplina d on t.disciplina_iddisciplina = d.iddisciplina
+  inner join matricula m on m.turma_idturma = t.idturma
+group by
+  t.idturma
+having
+  count(m.idmatricula)  >= 5
+order by count(m.idmatricula) asc;
 
 -- ---------------------------------------------------------------------
 3. Qual a média de notas por aluno em cada turma? Mostre o nome do aluno, a disciplina e
